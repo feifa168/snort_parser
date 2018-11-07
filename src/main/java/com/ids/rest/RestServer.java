@@ -10,7 +10,7 @@ import java.net.URI;
 public class RestServer {
 
     // Base URI the Grizzly HTTP server will listen on
-    public static final String BASE_URI = "http://localhost:8888/app/";
+    public static final String BASE_URI = "http://172.16.39.21:8888/app/";
 
     /**
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
@@ -19,7 +19,7 @@ public class RestServer {
     public static HttpServer startServer() {
         // create a resource config that scans for JAX-RS resources and providers
         // in com.example package
-        final ResourceConfig rc = new ResourceConfig().packages("com.sec365.ids.rest");
+        final ResourceConfig rc = new ResourceConfig().packages("com.ids.rest");
 
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI

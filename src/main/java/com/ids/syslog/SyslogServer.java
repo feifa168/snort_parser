@@ -17,18 +17,22 @@ public class SyslogServer {
     private final int default_port = 514;
     private DatagramChannel channel = null;
     private Selector select = null;
+    private SyslogQueue<IdsSyslogParser> queue = null;
 
     public SyslogServer() {
-        port = default_port;
-        init(port);
+        init(default_port, null);
     }
-
     public SyslogServer(int port) {
-        this.port = port;
-        init(port);
+        init(port, null);
     }
 
-    private void init(int port) {
+    public SyslogServer(int port, SyslogQueue<IdsSyslogParser> queue) {
+        init(port, queue);
+    }
+
+    private void init(int port, SyslogQueue<IdsSyslogParser> queue) {
+        this.port = port;
+        this.queue = queue;
         try {
             select = Selector.open();
             channel = DatagramChannel.open();
@@ -39,6 +43,9 @@ public class SyslogServer {
             e.printStackTrace();
         }
     }
+
+    public void setPort(int port) { this.port = port; }
+    public void setQueue(SyslogQueue<IdsSyslogParser> queue) { this.queue = queue; }
 
     public void start() {
         if ((channel == null) || (select == null))
@@ -99,7 +106,9 @@ public class SyslogServer {
             buf.clear();
             IdsSyslogParser idsParser = new IdsSyslogParser();
             idsParser.parser(content);
-            SyslogQueue.getInstance().add(idsParser);
+            if (queue != null) {
+                queue.add(idsParser);
+            }
 
             System.out.println("接收：" + content.toString().trim());
 

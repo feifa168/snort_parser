@@ -1,8 +1,11 @@
 package com.ids.beans;
 
 
+import org.apache.ibatis.type.Alias;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
+@Alias("IdsAlert")
 @XmlRootElement
 public class IdsAlert {
     private int     id;

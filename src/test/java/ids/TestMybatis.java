@@ -14,9 +14,9 @@ import java.io.InputStream;
 
 public class TestMybatis {
 
-    public static SqlSession sqlSession = null;
+    public SqlSession sqlSession = null;
 
-    public static void init() throws IOException {
+    public void init() throws IOException {
         // mybatis配置文件，这个地方的root地址为：resources，路径要对。
         String resource = "mybatis-config.xml";
         // 得到配置文件流
@@ -32,19 +32,19 @@ public class TestMybatis {
     @Test
     public void testGetIdsAlertById() {
         try {
-            TestMybatis.init();
+            this.init();
         } catch (IOException e) {
             e.printStackTrace();
         }
         IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
-        IdsAlert alert = dao.getIdsAlertById(864);
+        IdsAlert alert = dao.getIdsAlertById(921);
         System.out.println(alert.toString());
     }
 
     @Test
     public void testInsertIdsAlert() {
         try {
-            TestMybatis.init();
+            this.init();
         } catch (IOException e) {
             e.printStackTrace();
         }

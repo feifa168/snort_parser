@@ -12,7 +12,6 @@ import java.io.IOException;
 //}
 
 public class TestRestServer {
-
     @Test
     public void testRestServer() {
         final HttpServer server = RestServer.startServer();

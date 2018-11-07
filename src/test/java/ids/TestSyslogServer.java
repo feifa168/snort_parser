@@ -45,7 +45,7 @@ public class TestSyslogServer {
 
     @Test
     public void testSyslogQueue() {
-        SyslogQueue<String> queue = SyslogQueue.getInstance();
+        SyslogQueue<String> queue = new SyslogQueue();
         queue.add(new String("hello"));
         queue.offer("tom");
 
@@ -63,14 +63,14 @@ public class TestSyslogServer {
 
     @Test
     public void testSyslogServerQueue() {
+        SyslogQueue<IdsSyslogParser> queue = new SyslogQueue<>();
         Thread threadLogServer = new Thread(()->{
-            SyslogServer logServer = new SyslogServer(514);
+            SyslogServer logServer = new SyslogServer(514, queue);
             logServer.start();
         });
 
         Thread threadParseLog = new Thread(()->{
             while(true) {
-                SyslogQueue<IdsSyslogParser> queue = SyslogQueue.getInstance();
                 if (!queue.isEmpty()) {
                     IdsSyslogParser log = (IdsSyslogParser)queue.poll();
                     if (log != null) {
@@ -100,8 +100,9 @@ public class TestSyslogServer {
     @Test
     public void testSyslogServerQueueMysql() {
 
+        SyslogQueue<IdsSyslogParser> queue = new SyslogQueue<>();
         Thread threadLogServer = new Thread(()->{
-            SyslogServer logServer = new SyslogServer(514);
+            SyslogServer logServer = new SyslogServer(514, queue);
             logServer.start();
         });
 
@@ -115,7 +116,6 @@ public class TestSyslogServer {
                 e.printStackTrace();
             }
             while(true) {
-                SyslogQueue<IdsSyslogParser> queue = SyslogQueue.getInstance();
                 if (!queue.isEmpty()) {
                     IdsSyslogParser parser = (IdsSyslogParser)queue.poll();
                     if (parser != null) {
