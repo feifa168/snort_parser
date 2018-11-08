@@ -68,6 +68,61 @@ public class TestThreadPool {
         pool.shutdown();
     }
 
+    @Test
+    public void testThreadPoolAlertTask() {
+        final int processors = Runtime.getRuntime().availableProcessors();
+        final int corePoolSize = 2;//processors + 1;
+        final int maximumPoolSize = 3;//corePoolSize*2;
+        final int queueSize = 5;
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
+                TimeUnit.SECONDS, new LinkedBlockingDeque<>(queueSize), Executors.defaultThreadFactory(), new ThreadPoolExecutor.DiscardPolicy()) {
+
+            @Override
+            protected void beforeExecute(Thread t, Runnable r) {
+                System.out.println("准备执行：" + ((AlertTaskImpl<IdsSyslogParser, IdsAlertInterface>) r).getName());
+            }
+
+            @Override
+            protected void afterExecute(Runnable r, Throwable t) {
+                System.out.println("执行完成： " + ((AlertTaskImpl<IdsSyslogParser, IdsAlertInterface>) r).getName());
+            }
+            @Override
+            protected void terminated() {
+                System.out.println("线程池退出");
+            }
+
+        };
+
+        String[] msgs = {
+                "<38>Oct 26 11:49:15 localhost snort: \"(arp_spoof) unicast ARP request",
+                "<38>localhost snort: [116:442:1] \"(icmp4) ICMP destination unreachable communication with destination host is administratively prohibited\" [Priority: 3] {ICMP} 172.16.39.5 -> 172.16.39.16",
+                "<38>Oct 26 11:49:23 localhost [116:442:1] \"(icmp4) ICMP destination unreachable communication with destination host is administratively prohibited\" [Priority: 3] {ICMP} 172.16.39.5 -> 172.16.39.16",
+                "<38>Oct 26 11:49:25 localhost snort: [116:444:1] \"(ipv4) IPv4 option set\" [Priority: 3] {IGMP} 172.16.39.69 -> 224.0.0.22",
+                "<38>Oct 26 11:49:25 localhost snort: [116:444:1] \"(ipv4) IPv4 option set\" [Priority: 3] {IGMP} 172.16.39.69 <- 224.0.0.22",
+                "<38>Oct 26 11:49:25 localhost snort: [116:444:1] \"(ipv4) IPv4 option set\" [Priority: 3] {IGMP} 172.16.39.69 -> 224.0.0.22",
+                "<38>Oct 26 11:49:25 localhost snort: [116:444:1] \"(ipv4) IPv4 option set\" [Priority: 3] {IGMP} 172.16.39.69 -> 224.0.0.22",
+                "<38>Oct 26 11:49:25 localhost snort: [122:15:1] \"(port_scan) IP filtered protocol sweep\" [Priority: 3] {IGMP} 172.16.39.69 -> 224.0.0.22",
+                "<38>Oct 26 11:49:25 localhost snort: [116:444:1] \"(ipv4) IPv4 option set\" [Priority: 3] {IGMP} 172.16.39.69 -> 224.0.0.22",
+                "<78>Oct 31 17:10:01 localhost CROND[16849]: (root) CMD (/usr/lib64/sa/sa1 1 1)",
+                "<78>Oct 31 17:10:01 localhost CROND: (root) CMD (/usr/lib64/sa/sa1 1 1)",
+                "<30>Oct 31 17:10:01 localhost systemd: Starting Session 2748 of user root.",
+                "<38>Nov  1 09:49:13 localhost snort: [122:23:1] \"(port_scan) UDP filtered portsweep\" [Priority: 3] {UDP} 172.16.39.68:55326 -> 224.0.0.252:5355",
+                "<38>Nov  1 09:49:19 localhost snort: \"(arp_spoof) unicast ARP request",
+                "<38>Nov  1 09:49:35 localhost snort: [116:442:1] \"(icmp4) ICMP destination unreachable communication with destination host is administratively prohibited\" [Priority: 3] {ICMP} 172.16.39.5 -> 172.16.39.135"
+        };
+        for (int i=0; i<20; i++) {
+            IdsSyslogParser log = new IdsSyslogParser();
+            log.parser(msgs[i%msgs.length]);
+            pool.execute(new AlertTaskImpl<IdsSyslogParser, IdsAlertInterface>("task"+(i+1), log));
+            try {
+                Thread.sleep(0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        pool.shutdown();
+    }
 
     class SyslogQueue2<T> extends ConcurrentLinkedDeque<T> {
         public SyslogQueue2() {
@@ -126,6 +181,46 @@ public class TestThreadPool {
     }
 
     @Test
+    public void testSyslogThreadPoolExecutorAlertTask() {
+        Thread threadPut = new Thread(()->{
+            int i = 1;
+            while(isrun) {
+                IdsSyslogParser parser = new IdsSyslogParser();
+                parser.parser("<38>Oct 26 11:49:25 localhost snort: [116:444:1] \"(ipv4) IPv4 option set\" [Priority: 3] {IGMP} 172.16.39.69 -> 224.0.0.22");
+
+                ThreadPoolExecutor pool = new SyslogThreadPoolExecutor(1, 1,10, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingDeque<Runnable>(2),
+                        Executors.defaultThreadFactory(),
+                        new ThreadPoolExecutor.DiscardPolicy());
+                while(isrun) {
+                    pool.execute(new AlertTaskImpl<IdsSyslogParser, IdsAlertInterface>("task"+(i++), parser));
+//                    try {
+//                        Thread.sleep(500);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+                }
+                pool.shutdown();
+//                try {
+//                    Thread.sleep(1);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+            }
+        });
+        threadPut.start();
+
+        try {
+            Thread.sleep(4000);
+            isrun = false;
+
+            threadPut.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void testSyslogThreadPoolExecutorSyslogServer() {
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue();
         List<Thread> threads = new ArrayList(3);
@@ -168,6 +263,36 @@ public class TestThreadPool {
             pool.shutdown();
         });
         threads.add(threadGet);
+
+        for(Thread t : threads) {
+            t.start();
+        }
+
+        try {
+            Thread.sleep(4000);
+            isrun = false;
+
+            for(Thread t : threads) {
+                t.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSyslogThreadPoolExecutorSyslogServerAlertTask() {
+        ThreadPoolExecutor pool = new SyslogThreadPoolExecutor(1, 1,10, TimeUnit.MILLISECONDS,
+                new LinkedBlockingDeque<Runnable>(2),
+                Executors.defaultThreadFactory(),
+                new ThreadPoolExecutor.DiscardPolicy());
+        List<Thread> threads = new ArrayList();
+
+        Thread threadLogServer = new Thread(()->{
+            SyslogServer logServer = new SyslogServer(514, pool);
+            logServer.start();
+        });
+        threads.add(threadLogServer);
 
         for(Thread t : threads) {
             t.start();
@@ -271,6 +396,40 @@ public class TestThreadPool {
         }
     }
 
+    @Test
+    public void testSyslogThreadPoolExecutorSyslogServerMybatisAlertTask() {
+        ThreadPoolExecutor pool = SyslogThreadPoolExecutor.buildPool(60, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(1000));
+        List<Thread> threads = new ArrayList();
+
+        try {
+            this.init();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
+
+        Thread threadLogServer = new Thread(()->{
+            SyslogServer logServer = new SyslogServer(514, pool, dao);
+            logServer.start();
+        });
+        threads.add(threadLogServer);
+
+        for(Thread t : threads) {
+            t.start();
+        }
+
+        try {
+            Thread.sleep(4000);
+            isrun = false;
+
+            for(Thread t : threads) {
+                t.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testSyslogThreadPoolExecutorSyslogServerMybatisRest() {
@@ -331,6 +490,45 @@ public class TestThreadPool {
             pool.shutdown();
         });
         threads.add(threadGet);
+
+        for(Thread t : threads) {
+            t.start();
+        }
+
+        try {
+            Thread.sleep(4000);
+            isrun = false;
+
+            for(Thread t : threads) {
+                t.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSyslogThreadPoolExecutorSyslogServerMybatisRestAlertTask() {
+        ThreadPoolExecutor pool = SyslogThreadPoolExecutor.buildPool(60, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(1000));
+        List<Thread> threads = new ArrayList();
+
+        final HttpServer server = RestServer.startServer();
+        System.out.println(String.format("Jersey app started with WADL available at "
+                + "%sapplication.wadl\nHit enter to stop it...", RestServer.BASE_URI));
+
+        try {
+            this.init();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
+
+        Thread threadLogServer = new Thread(()->{
+            SyslogServer logServer = new SyslogServer(514, pool, dao);
+            logServer.start();
+        });
+        threads.add(threadLogServer);
 
         for(Thread t : threads) {
             t.start();

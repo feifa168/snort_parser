@@ -1,6 +1,8 @@
 package com.ids.syslog;
 
 
+import com.ids.dao.IdsAlertInterface;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -11,6 +13,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Iterator;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class SyslogServer {
     private int port;
@@ -18,21 +21,31 @@ public class SyslogServer {
     private DatagramChannel channel = null;
     private Selector select = null;
     private SyslogQueue<IdsSyslogParser> queue = null;
+    private ThreadPoolExecutor pool = null;
+    private IdsAlertInterface  dao  = null;
 
     public SyslogServer() {
-        init(default_port, null);
+        init(default_port, null, null, null);
     }
     public SyslogServer(int port) {
-        init(port, null);
+        init(port, null, null, null);
     }
 
     public SyslogServer(int port, SyslogQueue<IdsSyslogParser> queue) {
-        init(port, queue);
+        init(port, queue, null, null);
+    }
+    public SyslogServer(int port, ThreadPoolExecutor pool) {
+        init(port, null, pool, null);
+    }
+    public SyslogServer(int port, ThreadPoolExecutor pool, IdsAlertInterface dao) {
+        init(port, null, pool, dao);
     }
 
-    private void init(int port, SyslogQueue<IdsSyslogParser> queue) {
+    private void init(int port, SyslogQueue<IdsSyslogParser> queue, ThreadPoolExecutor pool, IdsAlertInterface dao) {
         this.port = port;
         this.queue = queue;
+        this.pool = pool;
+        this.dao  = dao;
         try {
             select = Selector.open();
             channel = DatagramChannel.open();
@@ -108,6 +121,11 @@ public class SyslogServer {
             idsParser.parser(content);
             if (queue != null) {
                 queue.add(idsParser);
+            }
+
+            if (pool != null) {
+                AlertTaskImpl<IdsSyslogParser, IdsAlertInterface> task = new AlertTaskImpl<>("taskname", idsParser, dao);
+                pool.execute(task);
             }
 
             System.out.println("接收：" + content.toString().trim());
