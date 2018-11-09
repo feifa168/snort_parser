@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<root>
+  <author name="james" location="UK">James Strachan
+    <book xmlns="book1" page="30"/>
+  </author>
+  <author name="Bob" location="US">Bob McWhirter</author>
+</root>

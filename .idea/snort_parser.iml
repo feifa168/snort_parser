@@ -44,5 +44,7 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.8.10" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.8.10" level="project" />
     <orderEntry type="library" name="Maven: org.mybatis:mybatis:3.4.6" level="project" />
+    <orderEntry type="library" name="Maven: org.dom4j:dom4j:2.1.1" level="project" />
+    <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
   </component>
 </module>

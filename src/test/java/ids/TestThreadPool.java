@@ -437,7 +437,7 @@ public class TestThreadPool {
         List<Thread> threads = new ArrayList(4);
 
         final HttpServer server = RestServer.startServer();
-        System.out.println(String.format("Jersey app started with WADL available at "
+        System.out.println(String.format("app started with WADL available at "
                 + "%sapplication.wadl\nHit enter to stop it...", RestServer.BASE_URI));
 
         Thread threadLogServer = new Thread(()->{
@@ -513,7 +513,7 @@ public class TestThreadPool {
         List<Thread> threads = new ArrayList();
 
         final HttpServer server = RestServer.startServer();
-        System.out.println(String.format("Jersey app started with WADL available at "
+        System.out.println(String.format("app started with WADL available at "
                 + "%sapplication.wadl\nHit enter to stop it...", RestServer.BASE_URI));
 
         try {
