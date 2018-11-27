@@ -121,8 +121,22 @@ public class IdsSyslogParser {
     public IdsAlert idsAlert = null;
     //private static final String regex = "<(?<PRI>\\d+)>(\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+):)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*\\\"(?<msg>.+)\\\"(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+))?";
     //private static final String regex = "<(?<PRI>\\d+)>(\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+):)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*(\\\"(?<msg>.+)\\\"|(?<msg1>.+))(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+))?";
-    private static final String regex = "<(?<pri>\\d+)>(?<time>\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+):)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*(\\\"(?<msg>.+)\\\"|(?<msg1>.+))(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<sport>\\d+))?\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<dport>\\d+))?)?";
+    //private static final String regex = "<(?<pri>\\d+)>(?<time>\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+):)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*(\\\"(?<msg>.+)\\\"|(?<msg1>.+))(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<sport>\\d+))?\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<dport>\\d+))?)?";
+    private static String regex = "<(?<pri>\\d+)>(?<time>\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+)(\\[(?<pid>\\w+)\\])?:)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*(\\\"(?<msg>.+)\\\"|(?<msg1>.+))(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<sport>\\d+))?\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<dport>\\d+))?)?";
+    private static String tmFormat = "MMM dd HH:mm:ssyyyy";
+    private static String tmOutFormat = "yyyy-MM-dd HH:mm:ss";
     public void parser(String syslogMsg) {
+        if (SyslogConfig.parse("syslog.xml")) {
+            if (SyslogConfig.regex != null) {
+                regex = SyslogConfig.regex;
+            }
+            if (SyslogConfig.tmFormat != null) {
+                tmFormat = SyslogConfig.tmFormat;
+            }
+            if (SyslogConfig.tmOutFormat != null) {
+                tmOutFormat = SyslogConfig.tmOutFormat;
+            }
+        }
         Matcher m = Pattern.compile(regex).matcher(syslogMsg);
         if (m.find()) {
             if (idsAlert == null) {
@@ -179,12 +193,11 @@ public class IdsSyslogParser {
         int year = cal.get(Calendar.YEAR);
         String tm = null;
 
-        final String DATE_FORMAT = "MMM dd HH:mm:ssyyyy";
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT,Locale.ENGLISH);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(tmFormat,Locale.ENGLISH);
         try {
             String strData = syslogDate+year;
             Date dt = dateFormat.parse(strData);
-            dateFormat.applyPattern("yyyy-MM-dd HH:mm:ss");
+            dateFormat.applyPattern(tmOutFormat);
             tm = dateFormat.format(dt);
         } catch (ParseException e) {
             e.printStackTrace();

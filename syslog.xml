@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<syslog>
+    <parse>
+        <item type="ids">
+            <regex><![CDATA[<(?<pri>\d+)>(?<time>\w{3}\s+\d+\s+\d+:\d+:\d+)?\s*(?<host>\w+)\s+((?<tag>\w+)(\[(?<pid>\w+)\])?:)?\s*(\[(?<gid>\w+):(?<sid>\w+):(?<rid>\w+)\])?\s*(\"(?<msg>.+)\"|(?<msg1>.+))(\s+\[\w+:\s+(?<priority>\d+)\]\s+\{(?<proto>\w+)\}\s+(?<sip>\d+\.\d+\.\d+\.\d+)(\:(?<sport>\d+))?\s+(?<direction>->|<-)\s+(?<dip>\d+\.\d+\.\d+\.\d+)(\:(?<dport>\d+))?)?]]></regex>
+            <tmFormat><![CDATA[MMM dd HH:mm:ssyyyy]]></tmFormat>
+            <tmOutFormat><![CDATA[yyyy-MM-dd HH:mm:ss]]></tmOutFormat>
+        </item>
+    </parse>
+</syslog>

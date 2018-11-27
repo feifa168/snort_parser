@@ -29,6 +29,11 @@ public class TestDom4j {
                 .addAttribute("name", "Bob")
                 .addAttribute("location", "US")
                 .addText("Bob McWhirter");
+
+        Element author3 = root.addElement("test")
+                .addAttribute("name", "Ft")
+                .addAttribute("location", "CN")
+                .addCDATA("<(?<pri>\\d+)>(?<time>\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+)(\\[(?<pid>\\w+)\\])?:)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*(\\\"(?<msg>.+)\\\"|(?<msg1>.+))(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<sport>\\d+))?\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+)(\\:(?<dport>\\d+))?)?");
         XMLWriter writer = null;
         try {
             OutputFormat format = null;
@@ -88,6 +93,8 @@ public class TestDom4j {
                 }
             }
 
+            Node nd = document.selectSingleNode("/root/test[@name=\"Ft\"]");
+            String reg = nd.getText();
             // iterate through attributes of root
             for ( Iterator i = root.attributeIterator(); i.hasNext(); ) {
                 Attribute attribute = (Attribute) i.next();
