@@ -5,9 +5,7 @@ import com.ids.db.SqlSessionBuild;
 import com.ids.rest.RestServer;
 import com.ids.syslog.SyslogServer;
 import com.ids.syslog.SyslogThreadPoolExecutor;
-import com.sun.xml.internal.ws.util.ByteArrayBuffer;
 import org.apache.ibatis.session.SqlSession;
-import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.http.server.HttpServer;
 
 import java.io.IOException;
@@ -25,8 +23,7 @@ public class App {
         List<Thread> threads = new ArrayList();
 
         final HttpServer server = RestServer.startServer();
-        System.out.println(String.format("app started with WADL available at "
-                + "%sapplication.wadl\nHit enter to stop it...", RestServer.BASE_URI));
+        System.out.println(String.format("app started with WADL available at %s \nHit enter to stop it...", RestServer.BASE_URI));
 
         try {
             boolean isrun = true;

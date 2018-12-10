@@ -1,0 +1,40 @@
+使用说明
+三个部分，一是采集程序，二是数据库，三是服务程序。
+
+1. 安装配置
+1.1 数据库配置
+a.mysql安装配置
+b.在mysql所在的机器上导入 snort_parser_result.sql
+    
+1.2 采集程序安装配置
+a.拷贝程序到目标机器
+b.解压
+    tar zxvf idsConfig.tar.gz
+c.切换到目录idsConfig
+d.修改run.xml，修改 /run/params[@type=syslog]/param/items/item/中的项，其中ip要改为服务程序的ip地址。
+d.执行安装命令(需要root权限)，拷贝过去如果没有可执行权限，则要增加可执行权限 ( chmod +x idsConfig.sh )
+    ./idsConfig.sh 网卡接口，该网卡就是待监测流量的网卡
+e.执行结束后会做以下修改，如果没有执行成功，请确认哪个步骤出错。
+1) 检查rsyslog是否运行，执行 systemctl status rsyslog
+2) 检查/etc/ld.so.conf文件是否包含 run.xml中的/run/params[@type=so]/items/item对应的值，默认为/usr/local/lib64
+3) /etc/rc.d/init.d/下是否有 网卡接口.sh
+4) 是否存在目录 /var/log/snort
+
+1.3 服务程序安装配置
+a.拷贝程序到目标机器
+b.解压
+    tar zxvf snort_parser.tar.gz
+c.切换到目录snort_parser
+d.修改配置文件 server.xml，修改<baseurl>http://hostip:port</baseurl> 为本机实际ip并指定端口号，不能指定localhost和127.0.0.1
+e.修改config.properties，修改url中的hostip，port，databasename，修改username和password
+    jdbc.driver = com.mysql.jdbc.Driver
+    jdbc.url = jdbc:mysql://hostip:port/databasename?characterEncoding=UTF-8
+    jdbc.username = user
+    jdbc.password = passswd
+
+3. 运行程序
+3.1 服务程序端
+a.启动服务，执行./ids_parser_run.sh
+
+3.2 采集端
+a.第一次启动需执行/etc/rc.d/init.d/网卡接口.sh，已设置开机自启动，后续不用手动启动

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<encrypt>
+    <src>snort_parser.jar</src>
+    <dst>snort_parser_enc.jar</dst>
+    <files>
+        <file type="package">com.ids.beans</file>
+        <file type="package">com.ids.dao</file>
+        <file type="package">com.ids.db</file>
+        <file type="package">com.ids.jdbc</file>
+        <file type="package">com.ids.syslog</file>
+        <file type="package">com.ids.App</file>
+    </files>
+</encrypt>

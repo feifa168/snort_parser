@@ -4,13 +4,12 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import java.io.IOException;
 import java.net.URI;
 
 public class RestServer {
 
     // Base URI the Grizzly HTTP server will listen on
-    public static String BASE_URI = "http://172.16.39.21:8886/app/";
+    public static String BASE_URI = "http://172.16.39.21:8888";
 
     /**
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.

@@ -1,0 +1,2 @@
+set outdir=..\out\artifacts\snort_parser_jar
+java -agentlib:libNativeDecrypt=encrypt.xml -jar EncryptEnc.jar -xml %outdir%\snort_parser.xml -src %outdir%\snort_parser.jar -dst %outdir%\snort_parser_enc.jar
