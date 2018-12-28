@@ -2,7 +2,8 @@
 SQLyog 企业版 - MySQL GUI v8.14 
 MySQL - 5.1.61-community-log : Database - ids
 *********************************************************************
-*/
+*/
+
 
 /*!40101 SET NAMES utf8 */;
 
@@ -29,13 +30,13 @@ CREATE TABLE `alert` (
   `gid` int(11) DEFAULT NULL,
   `sid` int(11) DEFAULT NULL,
   `rid` int(11) DEFAULT NULL,
-  `msg` varchar(512) DEFAULT NULL,
+  `msg` varchar(4096) DEFAULT NULL,
   `priority` int(11) DEFAULT NULL,
   `proto` varchar(32) DEFAULT NULL COMMENT '协议类型',
   `sip` varchar(128) DEFAULT NULL,
   `sport` int(11) DEFAULT NULL COMMENT '端口号',
   `isleft2right` tinyint(1) DEFAULT NULL COMMENT 'true为sip->dip,false为sip<-dip',
-  `dip` varbinary(128) DEFAULT NULL,
+  `dip` varchar(128) DEFAULT NULL,
   `dport` int(11) DEFAULT NULL COMMENT '端口号',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=467522 DEFAULT CHARSET=gb2312;

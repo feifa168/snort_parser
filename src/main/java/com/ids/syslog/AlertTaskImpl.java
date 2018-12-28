@@ -1,6 +1,7 @@
 package com.ids.syslog;
 
 import com.ids.dao.IdsAlertInterface;
+import com.ids.debug.DebugInformation;
 
 public class AlertTaskImpl<T extends IdsSyslogParser, E extends IdsAlertInterface> implements IAlertTask<T>, Runnable {
     private T data;
@@ -27,7 +28,9 @@ public class AlertTaskImpl<T extends IdsSyslogParser, E extends IdsAlertInterfac
 
     public void run() {
         if (data != null) {
-            System.out.println(data.toString());
+            if (DebugInformation.ifDisplayMsg.get()) {
+                System.out.println(data.toString());
+            }
 
             if (dao != null) {
                 dao.putIdsAlert(data.getIdsAlert());

@@ -1,4 +1,4 @@
-使用说明
+﻿使用说明
 三个部分，一是采集程序，二是数据库，三是服务程序。
 
 1. 安装配置
@@ -7,14 +7,17 @@ a.mysql安装配置
 b.在mysql所在的机器上导入 snort_parser_result.sql
     
 1.2 采集程序安装配置
-a.拷贝程序到目标机器
+a.拷贝程序到目标机器任意目录
 b.解压
-    tar zxvf idsConfig.tar.gz
-c.切换到目录idsConfig
+    tar zxvf ids.tar.gz
+c.切换到目录ids
+    cd ids/install
 d.修改run.xml，修改 /run/params[@type=syslog]/param/items/item/中的项，其中ip要改为服务程序的ip地址。
-d.执行安装命令(需要root权限)，拷贝过去如果没有可执行权限，则要增加可执行权限 ( chmod +x idsConfig.sh )
-    ./idsConfig.sh 网卡接口，该网卡就是待监测流量的网卡
-e.执行结束后会做以下修改，如果没有执行成功，请确认哪个步骤出错。
+e.修改执行权限
+    chmod +x install.sh
+f.执行安装命令，网卡就是待监测流量的网卡，可能有多个网卡，可以通过ifconfig查看网卡，选择需要监测的那个。
+    ./install.sh 网卡
+g.执行结束后会做以下修改，如果没有执行成功，请确认哪个步骤出错。
 1) 检查rsyslog是否运行，执行 systemctl status rsyslog
 2) 检查/etc/ld.so.conf文件是否包含 run.xml中的/run/params[@type=so]/items/item对应的值，默认为/usr/local/lib64
 3) /etc/rc.d/init.d/下是否有 网卡接口.sh
@@ -22,19 +25,39 @@ e.执行结束后会做以下修改，如果没有执行成功，请确认哪个
 
 1.3 服务程序安装配置
 a.拷贝程序到目标机器
-b.解压
-    tar zxvf snort_parser.tar.gz
-c.切换到目录snort_parser
+b.解压snort_parser.tar.gz
+c.切换到目录
+    cd snort_parser\snort_parser
 d.修改配置文件 server.xml，修改<baseurl>http://hostip:port</baseurl> 为本机实际ip并指定端口号，不能指定localhost和127.0.0.1
 e.修改config.properties，修改url中的hostip，port，databasename，修改username和password
     jdbc.driver = com.mysql.jdbc.Driver
     jdbc.url = jdbc:mysql://hostip:port/databasename?characterEncoding=UTF-8
     jdbc.username = user
     jdbc.password = passswd
+f.执行安装命令
+Linux安装
+1) 进入install目录
+    cd ..\install
+2) Linux需要增加install.sh的可执行权限
+    chmod +x install.sh
+3) 执行命令 ./install.sh
+Windows安装
+1) 执行命令 install.bat
+2) 防火墙设置允许通过的配置的端口号，参见service.xml，默认是8888
 
 3. 运行程序
 3.1 服务程序端
-a.启动服务，执行./ids_parser_run.sh
+a.启动服务
+    Linux下需要修改执行权限，执行./ids_server_run.sh
+    windows下执行ids_server_run.bat
 
 3.2 采集端
 a.第一次启动需执行/etc/rc.d/init.d/网卡接口.sh，已设置开机自启动，后续不用手动启动
+
+4. 停止与卸载
+4.1 停止监测
+    # ps -A | grep snort
+    529 pts/1    00:00:00 snort
+    # kill 进程id，这里是529
+4.2 停止服务
+删除/etc/rc.d/init.d/网卡.sh，这个网卡.sh是安装时写入的，删除即可。

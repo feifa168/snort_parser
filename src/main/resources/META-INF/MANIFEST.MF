@@ -1,17 +1,17 @@
 Manifest-Version: 1.0
-Class-Path: commons-beanutils-1.9.3.jar jersey-hk2-2.27.jar javax.anno
- tation-api-1.2.jar hk2-api-2.5.0-b42.jar jersey-entity-filtering-2.27
- .jar jersey-container-grizzly2-http-2.27.jar jersey-client-2.27.jar g
- rizzly-http-2.4.0.jar osgi-resource-locator-1.0.1.jar hamcrest-core-1
- .3.jar jaxen-1.1.6.jar jersey-server-2.27.jar javax.ws.rs-api-2.1.jar
-  javax.inject-2.5.0-b42.jar hk2-utils-2.5.0-b42.jar validation-api-1.
- 1.0.Final.jar hk2-locator-2.5.0-b42.jar jersey-common-2.27.jar common
- s-logging-1.2.jar jackson-core-2.8.10.jar jackson-module-jaxb-annotat
- ions-2.8.10.jar jackson-annotations-2.8.10.jar mybatis-3.4.6.jar juni
- t-4.12.jar jackson-databind-2.8.10.jar javassist-3.22.0-CR2.jar jerse
- y-media-jaxb-2.27.jar grizzly-framework-2.4.0.jar jersey-media-json-j
- ackson-2.27.jar javax.inject-1.jar grizzly-http-server-2.4.0.jar dom4
- j-2.1.1.jar commons-collections-3.2.2.jar aopalliance-repackaged-2.5.
- 0-b42.jar mysql-connector-java-5.1.47.jar
+Class-Path: mybatis-3.4.6.jar commons-beanutils-1.9.3.jar jackson-core
+ -2.8.10.jar hk2-locator-2.5.0-b42.jar jackson-module-jaxb-annotations
+ -2.8.10.jar grizzly-http-server-2.4.0.jar jackson-databind-2.8.10.jar
+  commons-logging-1.2.jar jersey-media-json-jackson-2.27.jar jersey-co
+ ntainer-grizzly2-http-2.27.jar javassist-3.22.0-CR2.jar osgi-resource
+ -locator-1.0.1.jar javax.annotation-api-1.2.jar validation-api-1.1.0.
+ Final.jar javax.inject-1.jar hk2-utils-2.5.0-b42.jar javax.inject-2.5
+ .0-b42.jar commons-collections-3.2.2.jar jersey-entity-filtering-2.27
+ .jar hk2-api-2.5.0-b42.jar grizzly-http-2.4.0.jar grizzly-framework-2
+ .4.0.jar jaxen-1.1.6.jar hamcrest-core-1.3.jar aopalliance-repackaged
+ -2.5.0-b42.jar mysql-connector-java-5.1.47.jar jersey-hk2-2.27.jar je
+ rsey-common-2.27.jar jersey-client-2.27.jar jersey-server-2.27.jar ja
+ vax.ws.rs-api-2.1.jar dom4j-2.1.1.jar jersey-media-jaxb-2.27.jar jack
+ son-annotations-2.8.10.jar junit-4.13-beta-1.jar
 Main-Class: com.ids.App
 

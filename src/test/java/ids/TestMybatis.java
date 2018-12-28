@@ -9,6 +9,8 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,9 +22,14 @@ public class TestMybatis {
         // mybatis配置文件，这个地方的root地址为：resources，路径要对。
         String resource = "mybatis-config.xml";
         // 得到配置文件流
-        InputStream inputStream = Resources.getResourceAsStream(resource);
+        InputStream inputStream = null;
+        String urlXml = System.getProperty("user.dir")+System.getProperty("file.separator")+resource;
+        inputStream = new FileInputStream(urlXml);
+        //inputStream = Resources.getResourceAsStream(resource);
         // 创建会话工厂，传入mybatis的配置文件信息
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        SqlSessionFactory sqlSessionFactory = null;
+        //sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 
         // 通过工厂得到SqlSession
         //sqlSessionFactory.getConfiguration().addMapper(IdsAlertInterface.class);

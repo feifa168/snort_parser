@@ -3,6 +3,7 @@
 <encrypt>
     <src>snort_parser.jar</src>
     <dst>snort_parser_enc.jar</dst>
+    <decxml>dec_ids_server.xml</decxml>
     <files>
         <file type="package">com.ids.beans</file>
         <file type="package">com.ids.dao</file>

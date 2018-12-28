@@ -2,6 +2,7 @@ package com.ids.syslog;
 
 
 import com.ids.dao.IdsAlertInterface;
+import com.ids.debug.DebugInformation;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -16,6 +17,14 @@ import java.util.Iterator;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SyslogServer {
+    static private enum RunStatus {
+        RUN_NEW,
+        RUN_RUNNABLE,
+        RUN_TERMINATED,
+    };
+    private static final long MAX_WAIT_MILLISECONDS = 10*1000;
+    private boolean isRun = true;
+    private RunStatus status = RunStatus.RUN_NEW;
     private int port;
     private final int default_port = 514;
     private DatagramChannel channel = null;
@@ -46,52 +55,68 @@ public class SyslogServer {
         this.queue = queue;
         this.pool = pool;
         this.dao  = dao;
+    }
+
+    public void setPort(int port) { this.port = port; }
+    public void setQueue(SyslogQueue<IdsSyslogParser> queue) { this.queue = queue; }
+
+    public void stop() {
+        isRun = false;
+    }
+
+    public boolean isRunnable() {
+        return status == RunStatus.RUN_RUNNABLE;
+    }
+
+    public void start() {
         try {
             select = Selector.open();
             channel = DatagramChannel.open();
+
+            try {
+                channel.configureBlocking(false);
+                channel.socket().bind(new InetSocketAddress(port));
+                channel.register(select, SelectionKey.OP_READ);
+
+                try {
+                    System.out.println("syslog server is running...");
+                    status = RunStatus.RUN_RUNNABLE;
+                    while (isRun) {
+                        int selNum = select.select(MAX_WAIT_MILLISECONDS);
+                        if (selNum < 1) {
+                            continue;
+                        }
+
+                        Iterator item = select.selectedKeys().iterator();
+                        while (item.hasNext()) {
+                            SelectionKey key = (SelectionKey)item.next();
+                            item.remove();
+
+                            if (key.isReadable()) {
+                                receiveData(key);
+                            }
+                        }
+                    }
+                    System.out.println("syslog server exit");
+                }catch(IOException e) {
+                    e.printStackTrace();
+                }
+
+            } catch(ClosedChannelException e) {
+                e.printStackTrace();
+            } catch(SocketException e) {
+                e.printStackTrace();
+            }catch(IOException e) {
+                e.printStackTrace();
+            }
+
         } catch (IOException e) {
             select = null;
             channel = null;
 
             e.printStackTrace();
         }
-    }
-
-    public void setPort(int port) { this.port = port; }
-    public void setQueue(SyslogQueue<IdsSyslogParser> queue) { this.queue = queue; }
-
-    public void start() {
-        if ((channel == null) || (select == null))
-            return;
-
-        try {
-            channel.configureBlocking(false);
-            channel.socket().bind(new InetSocketAddress(port));
-            channel.register(select, SelectionKey.OP_READ);
-        } catch(ClosedChannelException e) {
-            e.printStackTrace();
-        } catch(SocketException e) {
-            e.printStackTrace();
-        }catch(IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            System.out.println("begin...");
-            while (select.select() > 0) {
-                Iterator item = select.selectedKeys().iterator();
-                while (item.hasNext()) {
-                    SelectionKey key = (SelectionKey)item.next();
-                    item.remove();
-
-                    if (key.isReadable()) {
-                        receiveData(key);
-                    }
-                }
-            }
-        }catch(IOException e) {
-            e.printStackTrace();
-        }
+        status = RunStatus.RUN_TERMINATED;
     }
 
     private void receiveData(SelectionKey key) {
@@ -128,7 +153,9 @@ public class SyslogServer {
                 pool.execute(task);
             }
 
-            System.out.println("接收：" + content.toString().trim());
+            if (DebugInformation.ifDisplayMsg.get()) {
+                System.out.println("接收：" + content.toString().trim());
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
