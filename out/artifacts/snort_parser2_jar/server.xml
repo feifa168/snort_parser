@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<rest>
-    <server>
-        <baseurl>http://172.16.39.21:8888</baseurl>
-        <class>com.ids.rest</class>
-    </server>
-</rest>
