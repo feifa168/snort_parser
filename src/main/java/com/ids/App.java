@@ -4,6 +4,7 @@ import com.ids.dao.IdsAlertInterface;
 import com.ids.db.SqlSessionBuild;
 import com.ids.debug.DebugInformation;
 import com.ids.rest.RestServer;
+import com.ids.syslog.SyslogConfig;
 import com.ids.syslog.SyslogServer;
 import com.ids.syslog.SyslogThreadPoolExecutor;
 import org.apache.ibatis.session.SqlSession;
@@ -19,12 +20,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class App {
     public static void main(String[] args) {
-
-        ThreadPoolExecutor parseSyslogPool = SyslogThreadPoolExecutor.buildPool(60, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(1000));
-        List<Thread> threads = new ArrayList();
+        // syslog解析用到的配置
+        if (!SyslogConfig.parse("syslog.xml")) {
+            System.out.println("syslog.xml格式不正确，请查证");
+            return;
+        }
 
         final HttpServer restServer = RestServer.startServer();
         System.out.println(String.format("restful server started at %s/ids/index \nHit enter to stop it...", RestServer.BASE_URI));
+
+        ThreadPoolExecutor parseSyslogPool = SyslogThreadPoolExecutor.buildPool(60, TimeUnit.SECONDS, new LinkedBlockingDeque<Runnable>(1000));
+        List<Thread> threads = new ArrayList();
 
         class ThreadLoopExit {
             public AtomicBoolean isRun = new AtomicBoolean(true);
@@ -34,14 +40,34 @@ public class App {
         try {
             SqlSession sqlSession = SqlSessionBuild.createSqlSession("mybatis-config.xml");
             IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
-            SyslogServer logServer = new SyslogServer(514, parseSyslogPool, dao);
-            Thread threadLogServer = new Thread(()->{
-                String name = Thread.currentThread().getName();
-                System.out.println(name + "[" + Thread.currentThread().getId()+"] is running...");
-                logServer.start();
-                System.out.println(name + " is exiting...");
-            });
-            threads.add(threadLogServer);
+
+            List<SyslogServer> logServers = new ArrayList<>();
+            for (SyslogConfig.SyslogServerInfo server : SyslogConfig.logServers) {
+                if (server.protolcol.equals("udp")) {
+                    SyslogServer logServer = new SyslogServer(server.port, parseSyslogPool, dao);
+                    logServers.add(logServer);
+
+                    //SyslogServer logServer = new SyslogServer(514, parseSyslogPool, dao);
+                    Thread threadLogServer = new Thread(()->{
+                        String name = Thread.currentThread().getName();
+                        System.out.println(name + "[" + Thread.currentThread().getId()+"] is running...");
+                        logServer.start();
+                        System.out.println(name + " is exiting...");
+                    });
+                    threads.add(threadLogServer);
+                }
+            }
+
+//            //SyslogServer logServer = new SyslogServer(514, parseSyslogPool, dao);
+//            Thread threadLogServer = new Thread(()->{
+//                String name = Thread.currentThread().getName();
+//                System.out.println(name + "[" + Thread.currentThread().getId()+"] is running...");
+//                for (SyslogServer logServer : logServers) {
+//                    logServer.start();
+//                }
+//                System.out.println(name + " is exiting...");
+//            });
+//            threads.add(threadLogServer);
 
             Thread threadWaitForExit = new Thread(()->{
                 String name = Thread.currentThread().getName();
@@ -50,15 +76,19 @@ public class App {
                     if (!loopExit.isRun.get()) {
 
                         restServer.shutdown();
-                        logServer.stop();
 
-                        // 线程池和数据库要等syslog处理模块结束后才关闭
-                        while (logServer.isRunnable()) {
-                            try {
-                                //System.out.println("wait for log server end");
-                                Thread.sleep(10);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                        for (SyslogServer logServer : logServers) {
+                            logServer.stop();
+                        }
+                        for (SyslogServer logServer : logServers) {
+                            // 线程池和数据库要等syslog处理模块结束后才关闭
+                            while (logServer.isRunnable()) {
+                                try {
+                                    //System.out.println("wait for log server end");
+                                    Thread.sleep(10);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                         System.out.println("syslog server is terminated");

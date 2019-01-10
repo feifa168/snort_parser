@@ -2,6 +2,7 @@ package ids;
 
 import com.ids.beans.IdsAlert;
 import com.ids.dao.IdsAlertInterface;
+import com.ids.debug.DebugInformation;
 import com.ids.rest.RestServer;
 import com.ids.syslog.*;
 import org.apache.ibatis.io.Resources;
@@ -29,6 +30,17 @@ public class TestThreadPool {
         public void run() {
             System.out.println(Thread.currentThread().getName() + ", " + name);
         }
+    }
+
+    private boolean initSyslogServer() {
+        // syslog解析用到的配置
+        if (!SyslogConfig.parse("syslog.xml")) {
+            System.out.println("syslog.xml格式不正确，请查证");
+            return false;
+        }
+
+        DebugInformation.ifDisplayMsg.set(true);
+        return true;
     }
 
     @Test
@@ -225,6 +237,10 @@ public class TestThreadPool {
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue();
         List<Thread> threads = new ArrayList(3);
 
+        if (!initSyslogServer()) {
+            return;
+        }
+
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, queue);
             logServer.start();
@@ -288,6 +304,10 @@ public class TestThreadPool {
                 new ThreadPoolExecutor.DiscardPolicy());
         List<Thread> threads = new ArrayList();
 
+        if (!initSyslogServer()) {
+            return;
+        }
+
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, pool);
             logServer.start();
@@ -328,6 +348,10 @@ public class TestThreadPool {
     public void testSyslogThreadPoolExecutorSyslogServerMybatis() {
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue();
         List<Thread> threads = new ArrayList(4);
+
+        if (!initSyslogServer()) {
+            return;
+        }
 
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, queue);
@@ -409,6 +433,10 @@ public class TestThreadPool {
 
         IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
 
+        if (!initSyslogServer()) {
+            return;
+        }
+
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, pool, dao);
             logServer.start();
@@ -439,6 +467,10 @@ public class TestThreadPool {
         final HttpServer server = RestServer.startServer();
         System.out.println(String.format("app started with WADL available at "
                 + "%sapplication.wadl\nHit enter to stop it...", RestServer.BASE_URI));
+
+        if (!initSyslogServer()) {
+            return;
+        }
 
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, queue);
@@ -523,6 +555,10 @@ public class TestThreadPool {
         }
 
         IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
+
+        if (!initSyslogServer()) {
+            return;
+        }
 
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, pool, dao);

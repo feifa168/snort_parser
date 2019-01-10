@@ -1,8 +1,10 @@
 package ids;
 
 import com.ids.beans.IdsAlert;
+import com.ids.debug.DebugInformation;
 import com.ids.jdbc.DbMySql;
 import com.ids.syslog.IdsSyslogParser;
+import com.ids.syslog.SyslogConfig;
 import com.ids.syslog.SyslogQueue;
 import com.ids.syslog.SyslogServer;
 import org.junit.Test;
@@ -10,6 +12,17 @@ import org.junit.Test;
 import java.sql.SQLException;
 
 public class TestSyslogServer {
+    private boolean initSyslogServer() {
+        // syslog解析用到的配置
+        if (!SyslogConfig.parse("syslog.xml")) {
+            System.out.println("syslog.xml格式不正确，请查证");
+            return false;
+        }
+
+        DebugInformation.ifDisplayMsg.set(true);
+        return true;
+    }
+
     @Test
     public void testSyslogTime() {
         System.out.println(IdsSyslogParser.transformSyslogDate("Oct 31 17:10:01"));
@@ -17,6 +30,10 @@ public class TestSyslogServer {
 
     @Test
     public void testSyslog() {
+        if (!initSyslogServer()) {
+            return;
+        }
+
         IdsSyslogParser parser = new IdsSyslogParser();
         IdsAlert alert = null;
         int pri;
@@ -57,12 +74,18 @@ public class TestSyslogServer {
 
     @Test
     public void testSyslogServer() {
+        if (!initSyslogServer()) {
+            return;
+        }
         SyslogServer logServer = new SyslogServer(514);
         logServer.start();
     }
 
     @Test
     public void testSyslogServerQueue() {
+        if (!initSyslogServer()) {
+            return;
+        }
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue<>();
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, queue);
@@ -99,7 +122,9 @@ public class TestSyslogServer {
 
     @Test
     public void testSyslogServerQueueMysql() {
-
+        if (!initSyslogServer()) {
+            return;
+        }
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue<>();
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, queue);

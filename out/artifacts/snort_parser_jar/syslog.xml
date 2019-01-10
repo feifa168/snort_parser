@@ -8,4 +8,12 @@
             <tmOutFormat><![CDATA[yyyy-MM-dd HH:mm:ss]]></tmOutFormat>
         </item>
     </parse>
+    <servers>
+        <server>
+            <!-- udp | tcp -->
+            <protocol>udp</protocol>
+            <!-- default port is 514 -->
+            <port>514</port>
+        </server>
+    </servers>
 </syslog>

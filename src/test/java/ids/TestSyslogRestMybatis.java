@@ -2,9 +2,11 @@ package ids;
 
 import com.ids.beans.IdsAlert;
 import com.ids.dao.IdsAlertInterface;
+import com.ids.debug.DebugInformation;
 import com.ids.jdbc.DbMySql;
 import com.ids.rest.RestServer;
 import com.ids.syslog.IdsSyslogParser;
+import com.ids.syslog.SyslogConfig;
 import com.ids.syslog.SyslogQueue;
 import com.ids.syslog.SyslogServer;
 import org.apache.ibatis.io.Resources;
@@ -23,6 +25,17 @@ import java.util.Calendar;
 public class TestSyslogRestMybatis {
 
     public SqlSession sqlSession = null;
+
+    private boolean initSyslogServer() {
+        // syslog解析用到的配置
+        if (!SyslogConfig.parse("syslog.xml")) {
+            System.out.println("syslog.xml格式不正确，请查证");
+            return false;
+        }
+
+        DebugInformation.ifDisplayMsg.set(true);
+        return true;
+    }
 
     public void init() throws IOException {
         // mybatis配置文件，这个地方的root地址为：resources，路径要对。
@@ -65,6 +78,10 @@ public class TestSyslogRestMybatis {
     @Test
     public void testSyslogServerQueueMybatisMysql() {
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue<>();
+
+        if (!initSyslogServer()) {
+            return;
+        }
 
         Thread threadLogServer = new Thread(()->{
             SyslogServer logServer = new SyslogServer(514, queue);
@@ -117,6 +134,10 @@ public class TestSyslogRestMybatis {
         final HttpServer server = RestServer.startServer();
         System.out.println(String.format("Jersey app started with WADL available at "
                 + "%sapplication.wadl\nHit enter to stop it...", RestServer.BASE_URI));
+
+        if (!initSyslogServer()) {
+            return;
+        }
 
         SyslogQueue<IdsSyslogParser> queue = new SyslogQueue<>();
         Thread threadLogServer = new Thread(()->{

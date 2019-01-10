@@ -6,6 +6,8 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 //<syslog>
 //        <parse>
@@ -14,13 +16,57 @@ import java.io.File;
 //        <format><![CDATA[yyyy-MM-dd HH:mm:ss]]></format>
 
 public class SyslogConfig {
+    static public class SyslogServerInfo {
+        public static String defaultProtocol = "udp";
+        public static int defaultPort        = 514;
+        public String protolcol;
+        public int port;
+        public SyslogServerInfo() {
+            port        = defaultPort;
+            protolcol   = defaultProtocol;
+        }
+    }
     public static String regex;
     public static String tmOutFormat;
     public static String tmFormat;
+    public static List<SyslogServerInfo> logServers = new ArrayList<>();
+
     public static boolean parse(String xml)  {
         SAXReader reader = new SAXReader();
         try {
             Document doc = reader.read(new File(xml));
+
+            List<Node> ndServers = doc.selectNodes("/syslog/servers/server");
+            if (null != ndServers) {
+                for (Node ndServer : ndServers) {
+                    Node ndProtocol = ndServer.selectSingleNode("protocol");
+                    Node ndPort     = ndServer.selectSingleNode("port");
+
+                    String s;
+                    SyslogServerInfo server = new SyslogServerInfo();
+                    if (null != ndProtocol) {
+                        s = ndProtocol.getText();
+                        if (!s.isEmpty())
+                            server.protolcol = s;
+                    } else {
+                        server.protolcol = SyslogServerInfo.defaultProtocol;
+                    }
+
+                    if (null != ndPort) {
+                        s = ndPort.getText();
+                        if (!s.isEmpty())
+                            server.port = Integer.parseInt(s);
+                    } else {
+                        server.port = SyslogServerInfo.defaultPort;
+                    }
+
+                    logServers.add(server);
+                }
+            } else {
+                SyslogServerInfo server = new SyslogServerInfo();
+                logServers.add(server);
+            }
+
             Node item = doc.selectSingleNode("/syslog/parse/item[@type=\"ids\"]");
             if (item != null) {
                 Node ndregex    = item.selectSingleNode("regex");

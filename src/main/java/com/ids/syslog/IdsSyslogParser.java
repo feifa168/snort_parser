@@ -126,7 +126,8 @@ public class IdsSyslogParser {
     private static String tmFormat = "MMM dd HH:mm:ssyyyy";
     private static String tmOutFormat = "yyyy-MM-dd HH:mm:ss";
     public void parser(String syslogMsg) {
-        if (SyslogConfig.parse("syslog.xml")) {
+        //if (SyslogConfig.parse("syslog.xml"))
+        {
             if (SyslogConfig.regex != null) {
                 regex = SyslogConfig.regex;
             }
