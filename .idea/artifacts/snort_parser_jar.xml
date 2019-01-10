@@ -54,6 +54,14 @@
       <element id="directory" name="mappers">
         <element id="file-copy" path="$PROJECT_DIR$/mappers/idsalert.xml" />
       </element>
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libatomic-1.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libgcc_s_seh-1.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libgomp-1.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libquadmath-0.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libssp-0.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libstdc++-6.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/libwinpthread-1.dll" />
+      <element id="file-copy" path="$PROJECT_DIR$/encrypt/msvcrt.dll" />
     </root>
   </artifact>
 </component>
