@@ -118,6 +118,14 @@ public class IdsSyslogParser {
         }
     }
 
+    private String remoteAddr;
+    public IdsSyslogParser() {
+        this.remoteAddr = "localhost";
+    }
+    public IdsSyslogParser(String remoteAddr) {
+        this.remoteAddr = remoteAddr;
+    }
+
     public IdsAlert idsAlert = new IdsAlert();
     //private static final String regex = "<(?<PRI>\\d+)>(\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+):)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*\\\"(?<msg>.+)\\\"(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+))?";
     //private static final String regex = "<(?<PRI>\\d+)>(\\w{3}\\s+\\d+\\s+\\d+:\\d+:\\d+)?\\s*(?<host>\\w+)\\s+((?<tag>\\w+):)?\\s*(\\[(?<gid>\\w+):(?<sid>\\w+):(?<rid>\\w+)\\])?\\s*(\\\"(?<msg>.+)\\\"|(?<msg1>.+))(\\s+\\[\\w+:\\s+(?<priority>\\d+)\\]\\s+\\{(?<proto>\\w+)\\}\\s+(?<sip>\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(?<direction>->|<-)\\s+(?<dip>\\d+\\.\\d+\\.\\d+\\.\\d+))?";
@@ -148,7 +156,8 @@ public class IdsSyslogParser {
             if (value != null) { idsAlert.setpri(Integer.valueOf(value)); }
             value = getGroupName(m, "time");
             if (value != null) { idsAlert.setTime(IdsSyslogParser.transformSyslogDate(value)); }
-            idsAlert.setHost(getGroupName(m, "host"));
+            String host = getGroupName(m, "host").toLowerCase();
+            idsAlert.setHost(host.equals("localhost") ? remoteAddr : host);
             idsAlert.setTag(getGroupName(m,"tag"));
             value = getGroupName(m, "gid");
             if (value != null) { idsAlert.setGid(Integer.valueOf(value)); }

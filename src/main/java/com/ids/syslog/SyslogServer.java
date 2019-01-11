@@ -128,7 +128,7 @@ public class SyslogServer {
         try {
             SocketAddress address = sc.receive(buf);
             String[] addrPort = address.toString().replace("/", "").split(":");
-            String clientAddress;
+            String clientAddress = "";
             String clientPort;
             if (addrPort.length == 2) {
                 clientAddress = addrPort[0];
@@ -142,7 +142,7 @@ public class SyslogServer {
                 content += new String(buf.array());
             }
             buf.clear();
-            IdsSyslogParser idsParser = new IdsSyslogParser();
+            IdsSyslogParser idsParser = new IdsSyslogParser(clientAddress);
             idsParser.parser(content);
             if (queue != null) {
                 queue.add(idsParser);
