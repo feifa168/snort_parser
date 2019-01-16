@@ -144,13 +144,22 @@ public class SyslogServer {
             buf.clear();
             IdsSyslogParser idsParser = new IdsSyslogParser(clientAddress);
             idsParser.parser(content);
-            if (queue != null) {
-                queue.add(idsParser);
-            }
 
-            if (pool != null) {
-                AlertTaskImpl<IdsSyslogParser, IdsAlertInterface> task = new AlertTaskImpl<>("taskname", idsParser, dao);
-                pool.execute(task);
+            // 只写入tag为snort的日志
+            String tag = idsParser.idsAlert.getTag();
+            if ( (null==tag) || (!tag.equals("snort")) ) {
+                if (DebugInformation.ifDisplayMsg.get()) {
+                    System.out.println("not valid syslog");
+                }
+            } else {
+                if (queue != null) {
+                    queue.add(idsParser);
+                }
+
+                if (pool != null) {
+                    AlertTaskImpl<IdsSyslogParser, IdsAlertInterface> task = new AlertTaskImpl<>("taskname", idsParser, dao);
+                    pool.execute(task);
+                }
             }
 
             if (DebugInformation.ifDisplayMsg.get()) {
