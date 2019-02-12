@@ -1,12 +1,18 @@
 package com.ids.syslog;
 
+import com.ids.beans.IdsAlert;
 import com.ids.dao.IdsAlertInterface;
 import com.ids.debug.DebugInformation;
+import com.ids.syslog.client.CustomSyslog;
+import com.ids.syslog.client.NettySyslogClient;
+
+import java.util.List;
 
 public class AlertTaskImpl<T extends IdsSyslogParser, E extends IdsAlertInterface> implements IAlertTask<T>, Runnable {
     private T data;
     private E dao;
     private String name;
+    List<NettySyslogClient> syslogClients;
 
     public AlertTaskImpl() {
         init("", null, null);
@@ -20,10 +26,22 @@ public class AlertTaskImpl<T extends IdsSyslogParser, E extends IdsAlertInterfac
         init(name, data, dao);
     }
 
+    public AlertTaskImpl(String name, T data, E dao, List<NettySyslogClient> syslogClients) {
+        init(name, data, dao, syslogClients);
+    }
+
     private void init(String name, T data, E dao) {
         this.name = name;
         this.data = data;
         this.dao  = dao;
+        this.syslogClients = null;
+    }
+
+    private void init(String name, T data, E dao, List<NettySyslogClient> syslogClients) {
+        this.name = name;
+        this.data = data;
+        this.dao  = dao;
+        this.syslogClients = syslogClients;
     }
 
     public void run() {
@@ -32,8 +50,15 @@ public class AlertTaskImpl<T extends IdsSyslogParser, E extends IdsAlertInterfac
                 System.out.println(data.toString());
             }
 
+            IdsAlert alert = data.getIdsAlert();
             if (dao != null) {
-                dao.putIdsAlert(data.getIdsAlert());
+                dao.putIdsAlert(alert);
+            }
+
+            if (syslogClients != null) {
+                for (NettySyslogClient syslogClient : syslogClients) {
+                    syslogClient.sendMessage(new CustomSyslog(alert));
+                }
             }
         }
     }

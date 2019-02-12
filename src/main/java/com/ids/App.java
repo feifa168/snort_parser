@@ -7,6 +7,7 @@ import com.ids.rest.RestServer;
 import com.ids.syslog.SyslogConfig;
 import com.ids.syslog.SyslogServer;
 import com.ids.syslog.SyslogThreadPoolExecutor;
+import com.ids.syslog.client.NettySyslogClient;
 import org.apache.ibatis.session.SqlSession;
 import org.glassfish.grizzly.http.server.HttpServer;
 
@@ -37,6 +38,27 @@ public class App {
         }
         ThreadLoopExit loopExit = new ThreadLoopExit();
 
+        // 发送syslog日志
+        List<NettySyslogClient> syslogClients = new ArrayList<>();
+        Thread threadSendSyslog = new Thread(()->{
+            String name = Thread.currentThread().getName();
+            System.out.println(name + "[" + Thread.currentThread().getId()+"] is running...");
+            for (SyslogConfig.SyslogReceiver receiver : SyslogConfig.logReceivers) {
+                try {
+                    if (("udp".equals(receiver.protolcol))
+                            && !("".equals(receiver.host))) {
+                        NettySyslogClient syslogClient = new NettySyslogClient();
+                        syslogClients.add(syslogClient);
+
+                        syslogClient.start(receiver.host, receiver.port);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        threads.add(threadSendSyslog);
+
         try {
             SqlSession sqlSession = SqlSessionBuild.createSqlSession("mybatis-config.xml");
             IdsAlertInterface dao = sqlSession.getMapper(IdsAlertInterface.class);
@@ -44,7 +66,7 @@ public class App {
             List<SyslogServer> logServers = new ArrayList<>();
             for (SyslogConfig.SyslogServerInfo server : SyslogConfig.logServers) {
                 if (server.protolcol.equals("udp")) {
-                    SyslogServer logServer = new SyslogServer(server.port, parseSyslogPool, dao);
+                    SyslogServer logServer = new SyslogServer(server.port, parseSyslogPool, dao, syslogClients);
                     logServers.add(logServer);
 
                     //SyslogServer logServer = new SyslogServer(514, parseSyslogPool, dao);
@@ -92,6 +114,16 @@ public class App {
                             }
                         }
                         System.out.println("syslog server is terminated");
+
+                        // 关闭syslog发送
+                        try {
+                            for (NettySyslogClient syslogClient : syslogClients) {
+                                syslogClient.stop();
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println("syslog client is terminated");
 
                         // 关闭并等待线程池结束
                         parseSyslogPool.shutdown();

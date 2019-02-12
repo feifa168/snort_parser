@@ -12,6 +12,7 @@ Class-Path: mybatis-3.4.6.jar commons-beanutils-1.9.3.jar jackson-core
  -2.5.0-b42.jar mysql-connector-java-5.1.47.jar jersey-hk2-2.27.jar je
  rsey-common-2.27.jar jersey-client-2.27.jar jersey-server-2.27.jar ja
  vax.ws.rs-api-2.1.jar dom4j-2.1.1.jar jersey-media-jaxb-2.27.jar jack
- son-annotations-2.8.10.jar junit-4.13-beta-1.jar
+ son-annotations-2.8.10.jar junit-4.13-beta-1.jar netty-all-4.1.32.Fin
+ al.jar log4j-1.2.17.jar
 Main-Class: com.ids.App
 

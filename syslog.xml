@@ -16,4 +16,13 @@
             <port>514</port>
         </server>
     </servers>
+    <receivers>
+        <server>
+            <!-- udp | tcp -->
+            <protocol>udp</protocol>
+            <host>172.16.39.251</host>
+            <!-- default port is 514 -->
+            <port>514</port>
+        </server>
+    </receivers>
 </syslog>

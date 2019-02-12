@@ -63,6 +63,16 @@ d.修改配置文件 syslog.xml，修改syslog接收端口号，默认为514，�
         </server>
     </servers>
 </syslog>
+receivers下面是转换后的数据包装成自定义格式的syslog接收服务端，请根据实际情况修改ip和端口
+<receivers>
+    <server>
+        <!-- udp | tcp -->
+        <protocol>udp</protocol>
+        <host>172.16.39.251</host>
+        <!-- default port is 514 -->
+        <port>514</port>
+    </server>
+</receivers>
 e.修改配置文件 server.xml，修改<baseurl>http://hostip:port</baseurl> 为本机实际ip并指定端口号，不能指定localhost和127.0.0.1
 <rest>
     <server>
@@ -90,6 +100,8 @@ Windows安装
 a.启动服务
     Linux下需要修改执行权限，执行./ids_server_run.sh
     windows下执行ids_server_run.bat
+b.停止服务
+    输入exit
 
 3.2 采集端
 a.第一次启动需执行/etc/rc.d/init.d/网卡接口.sh，已设置开机自启动，后续不用手动启动

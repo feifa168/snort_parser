@@ -11,10 +11,12 @@
 * dom4j，用于解析xml。
 * jaxen，用于支持xpath操作。
 * junit，用于测试。
+* netty，用于发送syslog日志
 
 ## 模块
 * syslogServer，接收514端口的UDP数据，这里用于接收syslog格式的日志。
 * syslog日志解析，这里只支持snort告警日志格式。
+* syslog.client，用于发送syslog格式的日志。
 * dao模块，用于操作Mysql数据库，有原生态的jdbc操作，也有mybatis操作，推荐mybatis操作，有时间可以改成spring+mybatis。
 * restful服务器，通过jersey+grizzly2提供支持查询解析后的日志。
 
@@ -50,6 +52,7 @@
 * restful，一种实现了rest风格的操作，简化web服务器的开发，风格更好。
 * 数据库操作，java使用jdbc封装支持各种数据库，但jdbc比较基础，很原始，有很多框架可以更加友好以及方便的支持该操作，比如hibernate,mybatis,spring。
 * 正则表达式，java中随处可见正则表达式，而且支持组名查找
+* netty，高性能网络开发框架
 
 ## 为什么用java
 * JDK本身封装了很多实用的库，较之c++方便很多。

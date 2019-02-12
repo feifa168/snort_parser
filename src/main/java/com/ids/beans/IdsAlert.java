@@ -1,6 +1,5 @@
 package com.ids.beans;
 
-
 import org.apache.ibatis.type.Alias;
 
 import javax.xml.bind.annotation.XmlRootElement;

@@ -29,6 +29,11 @@ public class TestThreadPool {
         @Override
         public void run() {
             System.out.println(Thread.currentThread().getName() + ", " + name);
+//            try {
+//                Thread.sleep(3000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -44,11 +49,62 @@ public class TestThreadPool {
     }
 
     @Test
+    public void testThreadPoolMe() {
+        final int processors = Runtime.getRuntime().availableProcessors();
+        final int corePoolSize = 2;//processors + 1;
+        final int maximumPoolSize = 3;//corePoolSize*2;
+        final int queueSize = 100;
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
+                TimeUnit.SECONDS, new LinkedBlockingDeque<>(queueSize));
+
+        for (int i=0; i<200; i++) {
+            pool.execute(new MyTask("task"+(i+1)));
+            System.out.println("        pool execute " + (i+1));
+            try {
+                Thread.sleep(0);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+//        try {
+//            pool.awaitTermination(10, TimeUnit.SECONDS);//.shutdown();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+        while (true) {
+            int activCount = pool.getActiveCount();
+            int taskCount = pool.getQueue().size();
+            boolean is = pool.isTerminated();
+            System.out.println(pool.toString());
+            if (activCount==0 && taskCount==0) {
+                pool.shutdown();
+                break;
+            } else {
+                System.out.println(pool.toString());
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("shutdown pool===========================================================");
+    }
+
+    @Test
     public void testThreadPool() {
         final int processors = Runtime.getRuntime().availableProcessors();
         final int corePoolSize = 2;//processors + 1;
         final int maximumPoolSize = 3;//corePoolSize*2;
-        final int queueSize = 5;
+        final int queueSize = 50;
         ThreadPoolExecutor pool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60,
                 TimeUnit.SECONDS, new LinkedBlockingDeque<>(queueSize), Executors.defaultThreadFactory(), new ThreadPoolExecutor.DiscardPolicy()) {
 
@@ -60,16 +116,19 @@ public class TestThreadPool {
             @Override
             protected void afterExecute(Runnable r, Throwable t) {
                 System.out.println("执行完成： " + ((MyTask) r).getName());
+                System.out.println(this.toString());
             }
             @Override
             protected void terminated() {
                 System.out.println("线程池退出");
+                System.out.println(this.toString());
             }
 
         };
 
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<50; i++) {
             pool.execute(new MyTask("task"+(i+1)));
+            System.out.println("        pool execute " + (i+1));
             try {
                 Thread.sleep(0);
             } catch (InterruptedException e) {
@@ -77,7 +136,36 @@ public class TestThreadPool {
             }
         }
 
-        pool.shutdown();
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+//        try {
+//            pool.awaitTermination(10, TimeUnit.SECONDS);//.shutdown();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+        while (true) {
+            int activCount = pool.getActiveCount();
+            int taskCount = pool.getQueue().size();
+            boolean is = pool.isTerminated();
+            System.out.println(pool.toString());
+            if (activCount==0 && taskCount==0) {
+                pool.shutdown();
+                break;
+            } else {
+                System.out.println(pool.toString());
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("shutdown pool===========================================================");
     }
 
     @Test

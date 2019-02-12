@@ -26,10 +26,24 @@ public class SyslogConfig {
             protolcol   = defaultProtocol;
         }
     }
+    static public class SyslogReceiver {
+        public static String defaultProtocol = "udp";
+        public static int defaultPort        = 514;
+        public String protolcol;
+        public String host;
+        public int port;
+        public SyslogReceiver() {
+            port        = defaultPort;
+            protolcol   = defaultProtocol;
+            host        = "";
+        }
+    }
+
     public static String regex;
     public static String tmOutFormat;
     public static String tmFormat;
     public static List<SyslogServerInfo> logServers = new ArrayList<>();
+    public static List<SyslogReceiver> logReceivers = new ArrayList<>();
 
     public static boolean parse(String xml)  {
         SAXReader reader = new SAXReader();
@@ -65,6 +79,41 @@ public class SyslogConfig {
             } else {
                 SyslogServerInfo server = new SyslogServerInfo();
                 logServers.add(server);
+            }
+
+            List<Node> ndReceives = doc.selectNodes("/syslog/receivers/server");
+            if (null != ndReceives) {
+                for (Node ndServer : ndReceives) {
+                    Node ndProtocol = ndServer.selectSingleNode("protocol");
+                    Node ndHost     = ndServer.selectSingleNode("host");
+                    Node ndPort     = ndServer.selectSingleNode("port");
+
+                    String s;
+                    SyslogReceiver receiver = new SyslogReceiver();
+                    if (null != ndProtocol) {
+                        s = ndProtocol.getText();
+                        if (!s.isEmpty())
+                            receiver.protolcol = s;
+                    } else {
+                        receiver.protolcol = SyslogServerInfo.defaultProtocol;
+                    }
+
+                    if (null != ndHost) {
+                        s = ndHost.getText();
+                        if (!s.isEmpty())
+                            receiver.host = s;
+                    }
+
+                    if (null != ndPort) {
+                        s = ndPort.getText();
+                        if (!s.isEmpty())
+                            receiver.port = Integer.parseInt(s);
+                    } else {
+                        receiver.port = SyslogServerInfo.defaultPort;
+                    }
+
+                    logReceivers.add(receiver);
+                }
             }
 
             Node item = doc.selectSingleNode("/syslog/parse/item[@type=\"ids\"]");

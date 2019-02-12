@@ -3,6 +3,7 @@ package com.ids.syslog;
 
 import com.ids.dao.IdsAlertInterface;
 import com.ids.debug.DebugInformation;
+import com.ids.syslog.client.NettySyslogClient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -14,6 +15,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class SyslogServer {
@@ -32,6 +34,7 @@ public class SyslogServer {
     private SyslogQueue<IdsSyslogParser> queue = null;
     private ThreadPoolExecutor pool = null;
     private IdsAlertInterface  dao  = null;
+    private List<NettySyslogClient> syslogClients = null;
 
     public SyslogServer() {
         init(default_port, null, null, null);
@@ -49,12 +52,23 @@ public class SyslogServer {
     public SyslogServer(int port, ThreadPoolExecutor pool, IdsAlertInterface dao) {
         init(port, null, pool, dao);
     }
+    public SyslogServer(int port, ThreadPoolExecutor pool, IdsAlertInterface dao, List<NettySyslogClient> syslogClients) {
+        init(port, null, pool, dao, syslogClients);
+    }
 
     private void init(int port, SyslogQueue<IdsSyslogParser> queue, ThreadPoolExecutor pool, IdsAlertInterface dao) {
         this.port = port;
         this.queue = queue;
         this.pool = pool;
         this.dao  = dao;
+        this.syslogClients = null;
+    }
+    private void init(int port, SyslogQueue<IdsSyslogParser> queue, ThreadPoolExecutor pool, IdsAlertInterface dao, List<NettySyslogClient> syslogClients) {
+        this.port = port;
+        this.queue = queue;
+        this.pool = pool;
+        this.dao  = dao;
+        this.syslogClients = syslogClients;
     }
 
     public void setPort(int port) { this.port = port; }
@@ -157,7 +171,7 @@ public class SyslogServer {
                 }
 
                 if (pool != null) {
-                    AlertTaskImpl<IdsSyslogParser, IdsAlertInterface> task = new AlertTaskImpl<>("taskname", idsParser, dao);
+                    AlertTaskImpl<IdsSyslogParser, IdsAlertInterface> task = new AlertTaskImpl<>("taskname", idsParser, dao, syslogClients);
                     pool.execute(task);
                 }
             }
