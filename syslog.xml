@@ -24,5 +24,22 @@
             <!-- default port is 514 -->
             <port>514</port>
         </server>
+        <server>
+            <!-- udp | tcp -->
+            <protocol>udp</protocol>
+            <host>172.16.39.194</host>
+            <!-- default port is 514 -->
+            <port>514</port>
+        </server>
     </receivers>
+    <sensor>
+        <!-- 格式：数据类型_单位编号_设备类型_流水号；如rz_xxxxxx_xxxxxx_00001 -->
+        <name>rz_grxa_mysqlserver_00001</name>
+        <!-- true表示使用本机ip，false表示使用日志源的ip -->
+        <uselocalip>false</uselocalip>
+        <source>GRXA</source>
+        <type>syslog</type>
+        <delimiter>^</delimiter>
+        <tag>idsparser</tag>
+    </sensor>
 </syslog>

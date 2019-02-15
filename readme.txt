@@ -53,26 +53,44 @@ b.解压snort_parser.tar.gz
 c.切换到目录
     cd snort_parser\snort_parser
 d.修改配置文件 syslog.xml，修改syslog接收端口号，默认为514，可以修改为其他端口以免与默认的冲突，该端口要与采集端端口一致，目前只支持UDP，不支持TCP
-<syslog>
-    <servers>
-        <server>
-            <!-- udp | tcp -->
-            <protocol>udp</protocol>
-            <!-- default port is 514 -->
-            <port>514</port>
-        </server>
-    </servers>
-</syslog>
+    <syslog>
+        <servers>
+            <server>
+                <!-- udp | tcp -->
+                <protocol>udp</protocol>
+                <!-- default port is 514 -->
+                <port>514</port>
+            </server>
+        </servers>
+    </syslog>
+
 receivers下面是转换后的数据包装成自定义格式的syslog接收服务端，请根据实际情况修改ip和端口
-<receivers>
-    <server>
-        <!-- udp | tcp -->
-        <protocol>udp</protocol>
-        <host>172.16.39.251</host>
-        <!-- default port is 514 -->
-        <port>514</port>
-    </server>
-</receivers>
+    <syslog>
+        <receivers>
+            <server>
+                <!-- udp | tcp -->
+                <protocol>udp</protocol>
+                <host>172.16.39.111</host>
+                <!-- default port is 514 -->
+                <port>514</port>
+            </server>
+        </receivers>
+    </syslog>
+
+sensor用于配置发送的syslog日志格式，name要根据实际情况修改，其他可以默认
+    <syslog>
+        <sensor>
+            <!-- 格式：数据类型_单位编号_设备类型_流水号；如rz_xxxxxx_xxxxxx_00001 -->
+            <name>rz_grxa_mysqlserver_00001</name>
+            <!-- true表示使用本机ip，false表示使用日志源的ip -->
+            <uselocalip>false</uselocalip>
+            <source>GRXA</source>
+            <type>syslog</type>
+            <delimiter>^</delimiter>
+            <tag>idsparser</tag>
+        </sensor>
+    </syslog>
+
 e.修改配置文件 server.xml，修改<baseurl>http://hostip:port</baseurl> 为本机实际ip并指定端口号，不能指定localhost和127.0.0.1
 <rest>
     <server>

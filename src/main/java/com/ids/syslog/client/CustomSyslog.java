@@ -1,6 +1,7 @@
 package com.ids.syslog.client;
 
 import com.ids.beans.IdsAlert;
+import com.ids.syslog.SyslogConfig;
 
 public class CustomSyslog implements SyslogBuild {
     public CustomSyslog() {
@@ -17,18 +18,23 @@ public class CustomSyslog implements SyslogBuild {
 
     @Override
     public String build() {
+        SyslogConfig.SensorInfo sensor = SyslogConfig.sensor;
+
         StringBuilder log = new StringBuilder(128);
-        String separator = "^";
+        String separator = sensor.delimiter;
+        String ip = sensor.uselocalip ? sensor.ip : alert.getHost();
         log.append("<").append(alert.getPri()).append(">")
                 //.append(" ").append(alert.getHost())
-                .append(" ").append("custom:")
+                .append(" ").append(sensor.tag+":")
                 .append(" ")
                 .append(alert.getTime()).append(separator)
-                .append("GRXA").append(separator)
-                .append("syslog").append(separator)
+                .append(sensor.name).append(separator)
+                .append(ip).append(separator)
+                .append(sensor.source).append(separator)
+                .append(sensor.type).append(separator)
                 .append(alert.getPri()).append(separator)
                 .append((alert.getHost()!=null)?alert.getHost():"").append(separator)
-                .append((alert.getTag()!=null)?alert.getHost():"").append(separator)
+                .append((alert.getTag()!=null)?alert.getTag():"").append(separator)
                 .append(alert.getGid()).append(separator)
                 .append(alert.getSid()).append(separator)
                 .append(alert.getRid()).append(separator)

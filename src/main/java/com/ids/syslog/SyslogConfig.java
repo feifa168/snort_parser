@@ -6,6 +6,8 @@ import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,12 +40,30 @@ public class SyslogConfig {
             host        = "";
         }
     }
+    static public class SensorInfo {
+        public String name = "";
+        public boolean uselocalip = false;
+        public String ip;
+        public String source = "GRXA";
+        public String type = "syslog";
+        public String delimiter = "^";
+        public String tag = "idsparser";
+
+        public SensorInfo() {
+            try {
+                ip = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public static String regex;
     public static String tmOutFormat;
     public static String tmFormat;
     public static List<SyslogServerInfo> logServers = new ArrayList<>();
     public static List<SyslogReceiver> logReceivers = new ArrayList<>();
+    public static SensorInfo sensor = new SensorInfo();;
 
     public static boolean parse(String xml)  {
         SAXReader reader = new SAXReader();
@@ -116,6 +136,16 @@ public class SyslogConfig {
                 }
             }
 
+            Node ndSensor = doc.selectSingleNode("/syslog/sensor");
+            if (ndSensor != null) {
+                sensor.name     = getNodeText(ndSensor.selectSingleNode("name"),"");
+                sensor.source   = getNodeText(ndSensor.selectSingleNode("source"),    sensor.source);
+                sensor.uselocalip   = Boolean.valueOf(getNodeText(ndSensor.selectSingleNode("uselocalip"), "false"));
+                sensor.type     = getNodeText(ndSensor.selectSingleNode("type"),      sensor.type);
+                sensor.delimiter= getNodeText(ndSensor.selectSingleNode("delimiter"), sensor.delimiter);
+                sensor.tag      = getNodeText(ndSensor.selectSingleNode("tag"), sensor.tag);
+            }
+
             Node item = doc.selectSingleNode("/syslog/parse/item[@type=\"ids\"]");
             if (item != null) {
                 Node ndregex    = item.selectSingleNode("regex");
@@ -144,5 +174,14 @@ public class SyslogConfig {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private static String getNodeText(Node node, String defaultText) {
+        if (node != null) {
+            String s = node.getText();
+            if (!"".equals(s))
+                return s;
+        }
+        return defaultText;
     }
 }
